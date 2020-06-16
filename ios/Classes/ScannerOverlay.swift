@@ -39,7 +39,7 @@ class ScannerOverlay: UIView {
         let overlayColor = UIColor(red: 0.0,
                                    green: 0.0,
                                    blue: 0.0,
-                                   alpha: 0.55
+                                   alpha: 0.0
         )
         
         context?.setFillColor(overlayColor.cgColor)
@@ -51,38 +51,37 @@ class ScannerOverlay: UIView {
         UIColor.clear.setFill()
         UIRectFill(holeRectIntersection)
         
-        // draw a horizontal line over the middle
-        let lineRect = scanLineRect
-        line.frame = lineRect
-        
         // draw the green corners
-        let cornerSize: CGFloat = 30
+        let cornerSize: CGFloat = 20
+        let cornerRadius: CGFloat = 1
         let path = UIBezierPath()
         
         //top left corner
         path.move(to: CGPoint(x: holeRect.origin.x, y: holeRect.origin.y + cornerSize))
-        path.addLine(to: CGPoint(x: holeRect.origin.x, y: holeRect.origin.y))
-        path.addLine(to: CGPoint(x: holeRect.origin.x + cornerSize, y: holeRect.origin.y))
-        
+        path.addQuadCurve(to: CGPoint(x: holeRect.origin.x + cornerSize, y: holeRect.origin.y),
+						  controlPoint: CGPoint(x: holeRect.origin.x - cornerRadius, y: holeRect.origin.y - cornerRadius))
+
         //top right corner
         let rightHoleX = holeRect.origin.x + holeRect.size.width
         path.move(to: CGPoint(x: rightHoleX - cornerSize, y: holeRect.origin.y))
-        path.addLine(to: CGPoint(x: rightHoleX, y: holeRect.origin.y))
-        path.addLine(to: CGPoint(x: rightHoleX, y: holeRect.origin.y + cornerSize))
+		path.addQuadCurve(to: CGPoint(x: rightHoleX, y: holeRect.origin.y + cornerSize),
+						  controlPoint: CGPoint(x: rightHoleX + cornerRadius, y: holeRect.origin.y - cornerRadius) )
         
         // bottom right corner
         let bottomHoleY = holeRect.origin.y + holeRect.size.height
         path.move(to: CGPoint(x: rightHoleX, y: bottomHoleY - cornerSize))
-        path.addLine(to: CGPoint(x: rightHoleX, y: bottomHoleY))
-        path.addLine(to: CGPoint(x: rightHoleX - cornerSize, y: bottomHoleY))
+        path.addQuadCurve(to: CGPoint(x: rightHoleX - cornerSize, y: bottomHoleY),
+                            controlPoint: CGPoint(x: rightHoleX + cornerRadius, y: bottomHoleY + cornerRadius))
         
         // bottom left corner
         path.move(to: CGPoint(x: holeRect.origin.x + cornerSize, y: bottomHoleY))
-        path.addLine(to: CGPoint(x: holeRect.origin.x, y: bottomHoleY))
-        path.addLine(to: CGPoint(x: holeRect.origin.x, y: bottomHoleY - cornerSize))
-        
-        path.lineWidth = 2
-        UIColor.green.setStroke()
+        path.addQuadCurve(to: CGPoint(x: holeRect.origin.x, y: bottomHoleY - cornerSize),
+                            controlPoint: CGPoint(x: holeRect.origin.x - cornerRadius, y: bottomHoleY + cornerRadius) )
+
+        path.lineWidth = 5
+		path.lineJoinStyle = .round
+		path.lineCapStyle = .round
+		UIColor.systemGreen.setStroke()
         path.stroke()
     }
     
@@ -118,11 +117,11 @@ class ScannerOverlay: UIView {
             frameHeight += navbarHeight
         }
         
-        let scanRectOriginX = (frameWidth - scanRectWidth) / 2
+        let scanRectOriginX = (frameWidth - scanRectHeight) / 2
         let scanRectOriginY = (frameHeight - scanRectHeight) / 2
         return CGRect(x: scanRectOriginX,
                       y: scanRectOriginY,
-                      width: scanRectWidth,
+                      width: scanRectHeight,
                       height: scanRectHeight
         )
     }
